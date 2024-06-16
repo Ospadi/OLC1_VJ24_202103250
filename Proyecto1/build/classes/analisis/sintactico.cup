@@ -1,0 +1,212 @@
+package analisis;
+
+import java_cup.runtime.Symbol;
+import java.util.LinkedList;
+import abstracto.Instruccion;
+import simbolo.Tipo;
+import simbolo.tipoDato;
+import excepciones.Errores;
+
+
+//instrucciones
+import instrucciones.Print;
+import instrucciones.Declaracion;
+import instrucciones.AsignacionVar;
+import instrucciones.If;
+import instrucciones.Casteo;
+import instrucciones.For;
+import instrucciones.Break;
+import instrucciones.Continue;
+import instrucciones.While;
+import instrucciones.DoWhile;
+import instrucciones.Match;
+import instrucciones.Case;
+
+//expresiones
+import expresiones.Nativo;
+import expresiones.Aritmeticas;
+import expresiones.OperadoresAritmeticos;
+import expresiones.Relacionales;
+import expresiones.OperadoresRelacionales;
+import expresiones.Logicos;
+import expresiones.OperadoresLogicos;
+import expresiones.AccesoVar;
+import expresiones.Incremento;
+import expresiones.Decremento;
+
+parser code
+{:
+    scanner s;
+    parser(scanner s){this.s = s;}
+
+    public LinkedList<Errores> listaErrores = new LinkedList<>();
+    
+    public void syntax_error(Symbol s){
+        listaErrores.add(new Errores("SINTACTICO RECUPERABLE",
+                        "No se esperaba el componente "+s.value,
+                        s.left,
+                        s.right));
+    }
+
+    public void unrecovered_syntax_error (Symbol s){
+        listaErrores.add(new Errores("SINTACTICO NO RECUPERABLE",
+                        "No se esperaba el componente "+s.value,
+                        s.left,
+                        s.right));
+    }
+
+:}
+
+action code
+{:
+:}
+
+//terminales
+terminal String CADENA, ENTERO, DECIMAL, ID, CARAC;
+terminal PTCOMA, PRINT;
+terminal MAS, MENOS, UMENOS, MULT, DIV, POTENCIA, MODULO;
+terminal LLAVIZQ, LLAVDER, CORIZQ, CORDER, PARIZQ, PARDER;
+terminal DOSPT, INCRE, DECRE, IGUAL, IGUALA, DIFER;
+terminal MENOR, MENORQUE, MAYOR, MAYORQUE;
+terminal OR, AND, XOR, NOT, FLECHA, DEFAULT;
+terminal VAR, INT, RDOUBLE, BOOL, CHAR, RSTRING, CONST;
+terminal IF, ELSE, MATCH, WHILE, FOR, DO, RTRUE, RFALSE;
+terminal String BREAK, CONTINUE;
+
+//no terminales
+nonterminal LinkedList<Instruccion> INICIO, INSTRUCCIONES;
+nonterminal Instruccion INSTRUCCION;
+nonterminal Instruccion IMPRESION, DECLARACION, ASIGNACION;
+nonterminal Instruccion SIF, SWHILE, SDOWHILE;
+nonterminal Tipo TIPOS;
+nonterminal Instruccion EXPRESION;
+nonterminal Instruccion CFOR, ACTU, INCREMENTO, DECREMENTO;
+nonterminal Instruccion BK, CT;
+nonterminal Instruccion SMATCH;
+nonterminal Case CASE_MATCH;
+nonterminal LinkedList<Case> LIST_CASES;
+
+precedence left OR;
+precedence left AND;
+precedence left XOR;
+precedence right NOT;
+precedence left IGUALA, DIFER, MENOR, MENORQUE, MAYOR, MAYORQUE;
+precedence left MAS, MENOS;
+precedence left MULT, DIV, MODULO;
+precedence nonassoc POTENCIA;
+precedence left INCRE, DECRE;
+precedence left UMENOS;
+
+
+start with INICIO;
+
+INICIO ::= INSTRUCCIONES:a      {:   RESULT = a;   :}
+;
+
+INSTRUCCIONES ::= INSTRUCCIONES:a INSTRUCCION:b     {: RESULT = a; RESULT.add(b); :}
+                | INSTRUCCION:a                     {: RESULT = new LinkedList<>(); RESULT.add(a); :}
+;
+
+INSTRUCCION ::= IMPRESION: a        {:   RESULT = a;   :}
+              | DECLARACION:a       {:   RESULT = a;   :}
+              | ASIGNACION:a        {:   RESULT = a;   :}
+              | SIF:a               {:   RESULT = a;   :}
+              | CFOR:a              {:   RESULT = a;   :}
+              | SWHILE:a            {:   RESULT = a;   :}
+              | SMATCH:a            {:   RESULT = a;   :}
+              | SDOWHILE:a          {:   RESULT = a;   :}
+              | INCREMENTO:a PTCOMA {:   RESULT = a;   :}
+              | DECREMENTO:a PTCOMA {:   RESULT = a;   :}
+              | BK:a                {:   RESULT = a;   :} 
+              | CT:a                {:   RESULT = a;   :}
+              | error PTCOMA
+;
+
+SMATCH ::= MATCH EXPRESION:a LLAVIZQ LIST_CASES:b LLAVDER       {: RESULT = new Match(a, b, aleft, aright); :}
+;
+
+LIST_CASES ::= LIST_CASES:a CASE_MATCH:b      {: RESULT = a; RESULT.add(b); :}
+            | CASE_MATCH:a                    {: RESULT = new LinkedList<>(); RESULT.add(a); :}
+;
+
+CASE_MATCH ::= EXPRESION:a FLECHA LLAVIZQ INSTRUCCIONES:b LLAVDER   {: RESULT = new Case(a, b, true, aleft, aright); :}
+            | DEFAULT FLECHA LLAVIZQ INSTRUCCIONES:a LLAVDER        {: RESULT = new Case(null, a, false, aleft, aright); :}
+;
+
+IMPRESION ::= PRINT PARIZQ EXPRESION:a PARDER PTCOMA      {:   RESULT = new Print(a, aleft, aright);   :}
+;
+
+DECLARACION ::= VAR ID:b DOSPT TIPOS:a PTCOMA                       {:   RESULT = new Declaracion("var", b, null, a, aleft, aright);   :}
+              | VAR ID:b DOSPT TIPOS:a IGUAL EXPRESION:c PTCOMA     {:   RESULT = new Declaracion("var", b, c, a, aleft, aright);   :}
+              | CONST ID:b DOSPT TIPOS:a PTCOMA                     {:   RESULT = new Declaracion("const", b, null, a, aleft, aright); :}
+              | CONST ID:b DOSPT TIPOS:a IGUAL EXPRESION:c PTCOMA   {:   RESULT = new Declaracion("const", b, c, a, aleft, aright); :}
+;
+
+CFOR ::= FOR PARIZQ ASIGNACION:a EXPRESION:b PTCOMA ACTU:c PARDER LLAVIZQ INSTRUCCIONES:d LLAVDER     {:   RESULT = new For(a, b, c, d, aleft, aright);   :}
+;
+
+ASIGNACION ::= ID:a IGUAL EXPRESION:b PTCOMA  {:   RESULT=new AsignacionVar(a, b, aleft, aright);  :}
+;
+
+SIF ::= IF PARIZQ EXPRESION:a PARDER LLAVIZQ INSTRUCCIONES:b LLAVDER                                        {: RESULT = new If(a, b, null, null, aleft, aright); :}
+      | IF PARIZQ EXPRESION:a PARDER LLAVIZQ INSTRUCCIONES:b LLAVDER ELSE LLAVIZQ INSTRUCCIONES:c LLAVDER   {: RESULT = new If(a, b, c, null, aleft, aright); :}
+      | IF PARIZQ EXPRESION:a PARDER LLAVIZQ INSTRUCCIONES:b LLAVDER ELSE SIF:c                             {: RESULT = new If(a, b, null, (If) c, aleft, aright); :}
+;
+
+SWHILE ::= WHILE PARIZQ EXPRESION:a PARDER LLAVIZQ INSTRUCCIONES:b LLAVDER      {: RESULT = new While(a, b, aleft, aright); :}
+;
+
+SDOWHILE ::= DO LLAVIZQ INSTRUCCIONES:a LLAVDER WHILE PARIZQ EXPRESION:b PARDER PTCOMA     {: RESULT = new DoWhile(a, b, aleft, aright); :}
+;
+
+INCREMENTO ::= ID:a INCRE  {: RESULT = new Incremento(a, aleft, aright); :}
+;
+
+DECREMENTO ::= ID:a DECRE  {: RESULT = new Decremento(a, aleft, aright); :}
+;
+
+ACTU ::= ID:a IGUAL EXPRESION:b        {:   RESULT=new AsignacionVar(a, b, aleft, aright);  :}
+              | INCREMENTO:a           {:   RESULT=a;   :}
+              | DECREMENTO:a           {:   RESULT=a;   :} 
+;
+
+BK ::= BREAK:a PTCOMA      {:    RESULT = new Break(aleft, aright);     :}
+;
+
+CT ::= CONTINUE:a PTCOMA   {:    RESULT = new Continue(aleft, aright);     :}
+;
+
+TIPOS ::= INT          {:   RESULT = new Tipo (tipoDato.ENTERO);   :}
+        | RDOUBLE      {:   RESULT = new Tipo (tipoDato.DECIMAL);  :}
+        | BOOL         {:   RESULT = new Tipo (tipoDato.BOOLEANO); :}
+        | CHAR         {:   RESULT = new Tipo (tipoDato.CARACTER); :}
+        | RSTRING      {:   RESULT = new Tipo (tipoDato.CADENA);   :}
+;
+
+EXPRESION ::= MENOS EXPRESION:a                 {:   RESULT = new Aritmeticas(a, OperadoresAritmeticos.NEGACION, aleft, aright);   :} %prec UMENOS
+            | EXPRESION:a MAS EXPRESION:b       {:   RESULT = new Aritmeticas(a, b, OperadoresAritmeticos.SUMA, aleft, aright);   :}
+            | EXPRESION:a MENOS EXPRESION:b     {:   RESULT = new Aritmeticas(a, b, OperadoresAritmeticos.RESTA, aleft, aright);   :}
+            | EXPRESION:a MULT EXPRESION:b      {:   RESULT = new Aritmeticas(a, b, OperadoresAritmeticos.MULTIPLICACION, aleft, aright);   :}
+            | EXPRESION:a DIV EXPRESION:b       {:   RESULT = new Aritmeticas(a, b, OperadoresAritmeticos.DIVISION, aleft, aright);   :}
+            | EXPRESION:a POTENCIA EXPRESION:b  {:   RESULT = new Aritmeticas(a, b, OperadoresAritmeticos.POTENCIA, aleft, aright);   :}
+            | EXPRESION:a MODULO EXPRESION:b    {:   RESULT = new Aritmeticas(a, b, OperadoresAritmeticos.MODULO, aleft, aright);   :}
+            | EXPRESION:a IGUALA EXPRESION:b    {:   RESULT = new Relacionales(a, b, OperadoresRelacionales.IGUAL, aleft, aright); :}
+            | EXPRESION:a DIFER EXPRESION:b     {:   RESULT = new Relacionales(a, b, OperadoresRelacionales.DIFERENTE, aleft, aright); :}
+            | EXPRESION:a MENOR EXPRESION:b     {:   RESULT = new Relacionales(a, b, OperadoresRelacionales.MENOR, aleft, aright); :}
+            | EXPRESION:a MENORQUE EXPRESION:b  {:   RESULT = new Relacionales(a, b, OperadoresRelacionales.MENORQUE, aleft, aright); :}
+            | EXPRESION:a MAYOR EXPRESION:b     {:   RESULT = new Relacionales(a, b, OperadoresRelacionales.MAYOR, aleft, aright); :}
+            | EXPRESION:a MAYORQUE EXPRESION:b  {:   RESULT = new Relacionales(a, b, OperadoresRelacionales.MAYORQUE, aleft, aright); :}
+            | EXPRESION:a AND EXPRESION:b       {:   RESULT = new Logicos(a, b, OperadoresLogicos.AND, aleft, aright); :}
+            | EXPRESION:a OR EXPRESION:b        {:   RESULT = new Logicos(a, b, OperadoresLogicos.OR, aleft, aright); :}
+            | EXPRESION:a XOR EXPRESION:b       {:   RESULT = new Logicos(a, b, OperadoresLogicos.XOR, aleft, aright); :}
+            | NOT EXPRESION:a                   {:   RESULT = new Logicos(a, OperadoresLogicos.NOT, aleft, aright); :}
+            | ENTERO:a                          {:   RESULT = new Nativo(Integer.parseInt(a), new Tipo(tipoDato.ENTERO), aleft, aright );   :}
+            | DECIMAL:a                         {:   RESULT = new Nativo(new Double(a), new Tipo(tipoDato.DECIMAL), aleft, aright );   :}
+            | CADENA:a                          {:   RESULT = new Nativo(a, new Tipo(tipoDato.CADENA), aleft, aright );   :}
+            | ID:a                              {:   RESULT = new AccesoVar(a, aleft, aright);   :}
+            | CARAC:a                           {:   RESULT = new Nativo(a.charAt(1), new Tipo(tipoDato.CARACTER), aleft, aright);   :}
+            | RTRUE:a                           {:   RESULT = new Nativo(true, new Tipo(tipoDato.BOOLEANO), aleft, aright );   :}
+            | RFALSE:a                          {:   RESULT = new Nativo(false, new Tipo(tipoDato.BOOLEANO), aleft, aright );    :}            
+            | PARIZQ EXPRESION:a PARDER         {:   RESULT = a;   :} 
+            | PARIZQ TIPOS:a PARDER EXPRESION:b {:   RESULT = new Casteo(a, b, aleft, aright);   :}
+;
