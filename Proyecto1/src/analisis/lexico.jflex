@@ -64,8 +64,7 @@ ENTERO = [0-9]+
 DECIMAL = [0-9]+"."[0-9]+
 ID = [A-Za-z]([A-Za-z0-9])*
 CARAC = \'[^\']\'
-COMENTARIOLINEA = "//".*
-COMENTARIOMULTILINEA = \/\*(.|[\r\n])*?\*\/
+COMENTARIOS = (\/\/[^\n]*|\/\*[^*]*\*\/)
 
 // palabras reservadas
 VAR = "var"
@@ -160,8 +159,7 @@ RFALSE = "false"
 <YYINITIAL> {MODULO}   {return new Symbol(sym.MODULO, yyline, yycolumn,yytext());}
 
 <YYINITIAL> {BLANCOS}               {}
-<YYINITIAL> {COMENTARIOLINEA}       {}
-<YYINITIAL> {COMENTARIOMULTILINEA}  {}
+<YYINITIAL> {COMENTARIOS}           {}
 
 <YYINITIAL> . {
                 listaErrores.add(new Errores("LEXICO","El caracter "+

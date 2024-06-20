@@ -24,34 +24,34 @@ public class While extends Instruccion {
         this.instrucciones = instrucciones;
     }
 
+
     @Override
     public Object interpretar(Arbol arbol, tablaSimbolos tabla) {
         var newTabla = new tablaSimbolos(tabla);
 
-        while (true) {
-            var cond = this.condicion.interpretar(arbol, newTabla);
-            if (cond instanceof Errores) {
-                return cond;
-            }
+        var cond = this.condicion.interpretar(arbol, newTabla);
+        if (cond instanceof Errores) {
+            return cond;
+        }
 
-            if (this.condicion.tipo.getTipo() != tipoDato.BOOLEANO) {
-                return new Errores("SEMANTICO", "La condicion debe ser bool",
-                        this.linea, this.col);
-            }
+        if (this.condicion.tipo.getTipo() != tipoDato.BOOLEANO) {
+            return new Errores("SEMANTICO", "La condicion debe ser bool", this.linea, this.col);
+        }
 
-            if (!(boolean) cond) {
-                break;
-            }
-
+        while ((boolean) this.condicion.interpretar(arbol, newTabla)) {
             var newTabla2 = new tablaSimbolos(newTabla);
 
             for (var i : this.instrucciones) {
-                if (i instanceof Break) {
-                    return null;
-                }
                 var resIns = i.interpretar(arbol, newTabla2);
+
                 if (resIns instanceof Break) {
                     return null;
+                } else if (resIns instanceof Continue) {
+                    break;
+                }
+
+                if (resIns instanceof Errores) {
+                    return resIns;
                 }
             }
         }

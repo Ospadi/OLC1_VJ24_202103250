@@ -40,6 +40,27 @@ public class Declaracion extends Instruccion {
             if (this.valor.tipo.getTipo() != this.tipo.getTipo()) {
                 return new Errores("SEMANTICO", "Tipos erroneos en la declaración", this.linea, this.col);
             }
+        } else {
+            switch (this.tipo.getTipo()) {
+                case ENTERO:
+                    valorInicial = 0;
+                    break;
+                case DECIMAL:
+                    valorInicial = 0.0;
+                    break;
+                case BOOLEANO:
+                    valorInicial = false;
+                    break;
+                case CARACTER:
+                    valorInicial = '\u0000';
+                    break;
+                case CADENA:
+                    valorInicial = "";
+                    break;
+                default:
+                    valorInicial = null;
+                    break;
+            }
         }
 
         Simbolo s = new Simbolo(this.tipo, this.identificador, valorInicial);

@@ -27,32 +27,40 @@ public class DoWhile extends Instruccion {
     @Override
     public Object interpretar(Arbol arbol, tablaSimbolos tabla) {
         var newTabla = new tablaSimbolos(tabla);
-        
+        boolean ejecutar = true;
+
         do {
             var newTabla2 = new tablaSimbolos(newTabla);
 
             for (var i : this.instrucciones) {
-                if (i instanceof Break) {
-                    return null;
-                }
                 var resIns = i.interpretar(arbol, newTabla2);
+
                 if (resIns instanceof Break) {
-                    return null;
+                    ejecutar = false;
+                    break;
+                } else if (resIns instanceof Continue) {
+                    break;
                 }
+
                 if (resIns instanceof Errores) {
                     return resIns;
                 }
             }
 
-            var cond = this.condicion.interpretar(arbol, newTabla);
-            if (cond instanceof Errores) {
-                return cond;
+            if (ejecutar) {
+                var cond = this.condicion.interpretar(arbol, newTabla);
+                if (cond instanceof Errores) {
+                    return cond;
+                }
+
+                if (this.condicion.tipo.getTipo() != tipoDato.BOOLEANO) {
+                    return new Errores("SEMANTICO", "La condicion debe ser bool", this.linea, this.col);
+                }
+
+                ejecutar = (boolean) cond;
             }
-            if (this.condicion.tipo.getTipo() != tipoDato.BOOLEANO) {
-                return new Errores("SEMANTICO", "La condicion debe ser bool", this.linea, this.col);
-            }
-        } while ((boolean) this.condicion.interpretar(arbol, newTabla));
-        
+        } while (ejecutar);
+
         return null;
     }
 }
