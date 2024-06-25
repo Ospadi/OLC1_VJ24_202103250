@@ -21,6 +21,17 @@ import instrucciones.While;
 import instrucciones.DoWhile;
 import instrucciones.Match;
 import instrucciones.Case;
+import instrucciones.DeclaracionVector;
+import instrucciones.AsignacionVector2D;
+import instrucciones.DeclaracionVector2D;
+import instrucciones.DeclaracionLista;
+import instrucciones.AppendLista;
+import instrucciones.RemoveLista;
+import instrucciones.Asignacion;
+import instrucciones.FuncionRound;
+import instrucciones.FuncionLength;
+import instrucciones.FuncionToString;
+import instrucciones.FuncionFind;
 
 //expresiones
 import expresiones.Nativo;
@@ -33,6 +44,8 @@ import expresiones.OperadoresLogicos;
 import expresiones.AccesoVar;
 import expresiones.Incremento;
 import expresiones.Decremento;
+import expresiones.AccesoVector2D;
+import expresiones.Acceso;
 
 parser code
 {:
@@ -63,7 +76,7 @@ action code
 
 //terminales
 terminal String CADENA, ENTERO, DECIMAL, ID, CARAC;
-terminal PTCOMA, PRINT;
+terminal PTCOMA, PRINT, COMA;
 terminal MAS, MENOS, UMENOS, MULT, DIV, POTENCIA, MODULO;
 terminal LLAVIZQ, LLAVDER, CORIZQ, CORDER, PARIZQ, PARDER;
 terminal DOSPT, INCRE, DECRE, IGUAL, IGUALA, DIFER;
@@ -72,6 +85,7 @@ terminal OR, AND, XOR, NOT, FLECHA, DEFAULT;
 terminal VAR, INT, RDOUBLE, BOOL, CHAR, RSTRING, CONST;
 terminal IF, ELSE, MATCH, WHILE, FOR, DO, RTRUE, RFALSE;
 terminal String BREAK, CONTINUE;
+terminal PUNTO, APP, LIST, REM, NEW, ROUND, LEN, TOSTR, FIND;
 
 //no terminales
 nonterminal LinkedList<Instruccion> INICIO, INSTRUCCIONES;
@@ -85,6 +99,12 @@ nonterminal Instruccion BK, CT;
 nonterminal Instruccion SMATCH;
 nonterminal Case CASE_MATCH;
 nonterminal LinkedList<Case> LIST_CASES;
+nonterminal Instruccion DEC_VEC;
+nonterminal Instruccion DEC_VEC2D, ASIG_VEC2D, ACC_VEC2D;
+nonterminal LinkedList<Instruccion> LISTAVALORES;
+nonterminal LinkedList<LinkedList<Instruccion>> LISTAVALORES2D;
+nonterminal Instruccion DECL_LISTA, APPEND_LISTA, REMOVE_LISTA, ACC, ASIG;
+nonterminal Instruccion FUNC_ROUND, FUNC_LENGTH, FUNC_TOSTRING, FUNC_FIND;
 
 precedence left OR;
 precedence left AND;
@@ -96,6 +116,7 @@ precedence left MULT, DIV, MODULO;
 precedence nonassoc POTENCIA;
 precedence left INCRE, DECRE;
 precedence left UMENOS;
+precedence left COMA;
 
 
 start with INICIO;
@@ -107,18 +128,26 @@ INSTRUCCIONES ::= INSTRUCCIONES:a INSTRUCCION:b     {: RESULT = a; RESULT.add(b)
                 | INSTRUCCION:a                     {: RESULT = new LinkedList<>(); RESULT.add(a); :}
 ;
 
-INSTRUCCION ::= IMPRESION: a        {:   RESULT = a;   :}
-              | DECLARACION:a       {:   RESULT = a;   :}
-              | ASIGNACION:a        {:   RESULT = a;   :}
-              | SIF:a               {:   RESULT = a;   :}
-              | CFOR:a              {:   RESULT = a;   :}
-              | SWHILE:a            {:   RESULT = a;   :}
-              | SMATCH:a            {:   RESULT = a;   :}
-              | SDOWHILE:a          {:   RESULT = a;   :}
-              | INCREMENTO:a PTCOMA {:   RESULT = a;   :}
-              | DECREMENTO:a PTCOMA {:   RESULT = a;   :}
-              | BK:a                {:   RESULT = a;   :} 
-              | CT:a                {:   RESULT = a;   :}
+INSTRUCCION ::= IMPRESION: a            {:   RESULT = a;   :}
+              | DECLARACION:a           {:   RESULT = a;   :}
+              | ASIGNACION:a            {:   RESULT = a;   :}
+              | SIF:a                   {:   RESULT = a;   :}
+              | CFOR:a                  {:   RESULT = a;   :}
+              | SWHILE:a                {:   RESULT = a;   :}
+              | SMATCH:a                {:   RESULT = a;   :}
+              | SDOWHILE:a              {:   RESULT = a;   :}
+              | INCREMENTO:a PTCOMA     {:   RESULT = a;   :}
+              | DECREMENTO:a PTCOMA     {:   RESULT = a;   :}
+              | BK:a                    {:   RESULT = a;   :} 
+              | CT:a                    {:   RESULT = a;   :}
+              | DEC_VEC: a              {:   RESULT = a;   :}
+              | DEC_VEC2D: a            {:   RESULT = a;   :}
+              | ASIG_VEC2D: a           {:   RESULT = a;   :}
+              | DECL_LISTA: a           {:   RESULT = a;   :}
+              | APPEND_LISTA: a         {:   RESULT = a;   :}
+              | REMOVE_LISTA: a         {:   RESULT = a;   :}
+              | ASIG: a                 {:   RESULT = a;   :}
+              | ACC: a                  {:   RESULT = a;   :}
               | error PTCOMA
 ;
 
@@ -206,7 +235,73 @@ EXPRESION ::= MENOS EXPRESION:a                 {:   RESULT = new Aritmeticas(a,
             | ID:a                              {:   RESULT = new AccesoVar(a, aleft, aright);   :}
             | CARAC:a                           {:   RESULT = new Nativo(a.charAt(1), new Tipo(tipoDato.CARACTER), aleft, aright);   :}
             | RTRUE:a                           {:   RESULT = new Nativo(true, new Tipo(tipoDato.BOOLEANO), aleft, aright );   :}
-            | RFALSE:a                          {:   RESULT = new Nativo(false, new Tipo(tipoDato.BOOLEANO), aleft, aright );    :}            
-            | PARIZQ EXPRESION:a PARDER         {:   RESULT = a;   :} 
-            | PARIZQ TIPOS:a PARDER EXPRESION:b {:   RESULT = new Casteo(a, b, aleft, aright);   :}
+            | RFALSE:a                          {:   RESULT = new Nativo(false, new Tipo(tipoDato.BOOLEANO), aleft, aright );    :}      
+            | PARIZQ TIPOS:a PARDER EXPRESION:b {:   RESULT = new Casteo(a, b, aleft, aright);   :}      
+            | PARIZQ EXPRESION:a PARDER         {:   RESULT = a; :} 
+            | ACC_VEC2D:a                       {:   RESULT = a; :}
+            | ACC:a                             {:   RESULT = a; :}
+            | FUNC_ROUND:a                      {:   RESULT = a; :}
+            | FUNC_LENGTH:a                     {:   RESULT = a; :}
+            | FUNC_TOSTRING:a                   {:   RESULT = a; :}
+            | FUNC_FIND:a                       {:   RESULT = a; :}
 ;
+
+DEC_VEC ::= VAR ID:b DOSPT TIPOS:a CORIZQ CORDER IGUAL CORIZQ LISTAVALORES:c CORDER PTCOMA      {: RESULT = new DeclaracionVector("var", b, a, c, bleft, bright); :}
+            | CONST ID:b DOSPT TIPOS:a CORIZQ CORDER IGUAL CORIZQ LISTAVALORES:c CORDER PTCOMA  {: RESULT = new DeclaracionVector("const", b, a, c, bleft, bright); :}
+;
+
+LISTAVALORES ::= LISTAVALORES:a COMA EXPRESION:b    {: a.add(b); RESULT = a; :}
+                | EXPRESION:b                       {: RESULT = new LinkedList<Instruccion>(); ((LinkedList<Instruccion>)RESULT).add(b); :}
+;
+
+DEC_VEC2D ::= VAR ID:b DOSPT TIPOS:a CORIZQ CORDER CORIZQ CORDER IGUAL CORIZQ LISTAVALORES2D:c CORDER PTCOMA            {: RESULT = new DeclaracionVector2D(b, a, c, false, bleft, bright); :}
+            | CONST ID:b DOSPT TIPOS:a CORIZQ CORDER CORIZQ CORDER IGUAL CORIZQ LISTAVALORES2D:c CORDER PTCOMA          {: RESULT = new DeclaracionVector2D(b, a, c, true, bleft, bright); :}
+;
+
+ASIG_VEC2D ::= ID:b CORIZQ EXPRESION:a CORDER CORIZQ EXPRESION:c CORDER IGUAL EXPRESION:d PTCOMA              {: RESULT = new AsignacionVector2D(b, a, c, d, bleft, bright); :}
+;
+
+ACC_VEC2D ::= ID:b CORIZQ EXPRESION:a CORDER CORIZQ EXPRESION:c CORDER          {: RESULT = new AccesoVector2D(b, a, c, bleft, bright); :}
+;
+
+LISTAVALORES2D ::= LISTAVALORES2D:a COMA CORIZQ LISTAVALORES:b CORDER           {: a.add(b); RESULT = a; :}
+                 | CORIZQ LISTAVALORES:b CORDER                                 {: RESULT = new LinkedList<LinkedList<Instruccion>>(); ((LinkedList<LinkedList<Instruccion>>)RESULT).add(b); :}
+;
+
+DECL_LISTA ::= LIST MENOR TIPOS:b MAYOR ID:a IGUAL NEW LIST PARIZQ PARDER PTCOMA      {:   RESULT = new DeclaracionLista(b, a, aleft, aright);   :}
+;
+
+APPEND_LISTA ::= ID:a PUNTO APP PARIZQ EXPRESION:b PARDER PTCOMA          {: RESULT = new AppendLista(a, b, aleft, aright);   :}
+;
+
+REMOVE_LISTA ::= ID:a PUNTO REM PARIZQ EXPRESION:b PARDER PTCOMA          {: RESULT = new RemoveLista(a, b, aleft, aright);   :}
+;
+
+ASIG ::= ID:a CORIZQ EXPRESION:b CORDER IGUAL EXPRESION:c PTCOMA
+                {: RESULT = new Asignacion(a, b, c, aleft, aright); :}
+              ;
+
+ACC::= ID:a CORIZQ EXPRESION:b CORDER
+               {: RESULT = new Acceso(a, b, aleft, aright); :}
+             ;
+
+
+
+FUNC_ROUND ::= ROUND PARIZQ EXPRESION:a PARDER
+              {: RESULT = new FuncionRound(a, aleft, aright); :}
+            ;
+
+
+FUNC_LENGTH ::= LEN PARIZQ EXPRESION:a PARDER
+               {: RESULT = new FuncionLength(a, aleft, aright); :}
+             ;
+
+
+FUNC_TOSTRING ::= TOSTR PARIZQ EXPRESION:a PARDER
+                {: RESULT = new FuncionToString(a, aleft, aright); :}
+              ;
+
+
+FUNC_FIND ::= ID:a PUNTO FIND PARIZQ EXPRESION:b PARDER
+            {: RESULT = new FuncionFind(a, b, aleft, aright); :}
+          ;

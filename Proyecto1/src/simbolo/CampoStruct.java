@@ -8,11 +8,6 @@ package simbolo;
  *
  * @author opadi
  */
-public enum tipoDato {
-    ENTERO,
-    DECIMAL,
-    BOOLEANO,
-    CARACTER,
-    CADENA,
-    VOID,
+public class CampoStruct {
+    
 }

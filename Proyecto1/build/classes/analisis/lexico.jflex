@@ -36,6 +36,8 @@ LLAVDER = "}"
 CORIZQ = "["
 CORDER = "]"
 PTCOMA = ";"
+COMA = ","
+PUNTO = "."
 DOSPT = ":"
 INCRE = "++"
 DECRE = "--"
@@ -85,6 +87,14 @@ CONTINUE = "continue"
 PRINT = "println"
 RTRUE = "true"
 RFALSE = "false"
+APP = "append"
+REM = "remove" 
+NEW = "new"
+LIST = "list" 
+ROUND = "round"
+LEN = "length"
+TOSTR = "tostring"
+FIND = "find"
 
 %%
 
@@ -104,8 +114,16 @@ RFALSE = "false"
 <YYINITIAL> {DO}       {return new Symbol(sym.DO, yyline, yycolumn,yytext());}
 <YYINITIAL> {BREAK}    {return new Symbol(sym.BREAK, yyline, yycolumn,yytext());}
 <YYINITIAL> {CONTINUE} {return new Symbol(sym.CONTINUE, yyline, yycolumn,yytext());}
-<YYINITIAL> {RTRUE} {return new Symbol(sym.RTRUE, yyline, yycolumn,yytext());}
-<YYINITIAL> {RFALSE} {return new Symbol(sym.RFALSE, yyline, yycolumn,yytext());}
+<YYINITIAL> {RTRUE}    {return new Symbol(sym.RTRUE, yyline, yycolumn,yytext());}
+<YYINITIAL> {RFALSE}   {return new Symbol(sym.RFALSE, yyline, yycolumn,yytext());}
+<YYINITIAL> {APP}      {return new Symbol(sym.APP, yyline, yycolumn,yytext());}
+<YYINITIAL> {REM}      {return new Symbol(sym.REM, yyline, yycolumn,yytext());}
+<YYINITIAL> {NEW}      {return new Symbol(sym.NEW, yyline, yycolumn,yytext());}
+<YYINITIAL> {LIST}     {return new Symbol(sym.LIST, yyline, yycolumn,yytext());}
+<YYINITIAL> {ROUND}    {return new Symbol(sym.ROUND, yyline, yycolumn,yytext());}
+<YYINITIAL> {LEN}      {return new Symbol(sym.LEN, yyline, yycolumn,yytext());}
+<YYINITIAL> {TOSTR}    {return new Symbol(sym.TOSTR, yyline, yycolumn,yytext());}
+<YYINITIAL> {FIND}     {return new Symbol(sym.FIND, yyline, yycolumn,yytext());}
 
 
 <YYINITIAL> {DECIMAL} {return new Symbol(sym.DECIMAL, yyline, yycolumn,yytext());}
@@ -128,6 +146,8 @@ RFALSE = "false"
 }
 
 <YYINITIAL> {PTCOMA}   {return new Symbol(sym.PTCOMA, yyline, yycolumn,yytext());}
+<YYINITIAL> {COMA}     {return new Symbol(sym.COMA, yyline, yycolumn,yytext());}
+<YYINITIAL> {PUNTO}    {return new Symbol(sym.PUNTO, yyline, yycolumn,yytext());}
 <YYINITIAL> {PARIZQ}   {return new Symbol(sym.PARIZQ, yyline, yycolumn,yytext());}
 <YYINITIAL> {PARDER}   {return new Symbol(sym.PARDER, yyline, yycolumn,yytext());}
 <YYINITIAL> {LLAVIZQ}  {return new Symbol(sym.LLAVIZQ, yyline, yycolumn,yytext());}

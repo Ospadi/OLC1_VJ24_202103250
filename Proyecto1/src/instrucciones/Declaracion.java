@@ -6,6 +6,7 @@ package instrucciones;
 
 import abstracto.Instruccion;
 import excepciones.Errores;
+import java.util.LinkedList;
 import simbolo.Arbol;
 import simbolo.Simbolo;
 import simbolo.Tipo;
@@ -26,7 +27,7 @@ public class Declaracion extends Instruccion {
         this.identificador = identificador;
         this.valor = valor;
     }
-    
+
     @Override
     public Object interpretar(Arbol arbol, tablaSimbolos tabla) {
         Object valorInicial = null;
