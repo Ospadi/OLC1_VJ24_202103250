@@ -8,6 +8,10 @@ import abstracto.Instruccion;
 import analisis.parser;
 import analisis.scanner;
 import excepciones.Errores;
+import instrucciones.AsignacionVar;
+import instrucciones.Declaracion;
+import instrucciones.Execute;
+import instrucciones.Metodo;
 import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.File;
@@ -15,6 +19,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
+import java.util.Arrays;
 import java.util.LinkedList;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -202,14 +207,12 @@ public class Javacraft extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(Pest, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 658, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(0, 0, Short.MAX_VALUE))))
+                            .addComponent(Pest)
+                            .addComponent(jScrollPane4)))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(6, 6, 6)
                         .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 394, Short.MAX_VALUE)
                         .addComponent(Ejecutar, javax.swing.GroupLayout.PREFERRED_SIZE, 165, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
@@ -291,6 +294,7 @@ public class Javacraft extends javax.swing.JFrame {
             var ast = new Arbol((LinkedList<Instruccion>) resultado.value);
             tabla.setNombre("GLOBAL");
             ast.setConsola("");
+            ast.setTablaGlobal(tabla);
             listaErrores.clear();
             listaErrores.addAll(s.listaErrores);
             listaErrores.addAll(p.listaErrores);
@@ -298,12 +302,36 @@ public class Javacraft extends javax.swing.JFrame {
                 if (a == null) {
                     continue;
                 }
-
-                var res = a.interpretar(ast, tabla);
-                if (res instanceof Errores) {
-                    listaErrores.add((Errores) res);
+                
+                if(a instanceof Metodo );{
+                    ast.addFunciones(a);
                 }
             }
+            for (var a : ast.getInstrucciones()) {
+                if (a == null) {
+                    continue;
+                }
+                
+                if(a instanceof Declaracion | a instanceof AsignacionVar);{
+                    var res = a.interpretar(ast, tabla);
+                    if (res instanceof Errores) {
+                        listaErrores.add((Errores) res);
+                    }
+                }
+            }
+            Execute e = null;
+            for (var a : ast.getInstrucciones()) {
+                if (a == null) {
+                    continue;
+                }
+                
+                if (a instanceof Execute execute) {
+                    e = execute;
+                    break;
+                }
+            }
+            
+            
             textsalida.setText(ast.getConsola());
 
             for (var i : listaErrores) {
@@ -326,7 +354,16 @@ public class Javacraft extends javax.swing.JFrame {
         int i = 0;
         for (String key : tablaActual.keySet()) {
             datos[i][0] = key;
-            datos[i][1] = ((Simbolo) tablaActual.get(key)).valor;
+            Object valor = ((Simbolo) tablaActual.get(key)).valor;
+
+            if (valor instanceof Object[]) {
+                datos[i][1] = Arrays.deepToString((Object[]) valor);
+            } else if (valor instanceof LinkedList) {
+                datos[i][1] = valor.toString();
+            } else {
+                datos[i][1] = valor.toString();
+            }
+
             i++;
         }
 

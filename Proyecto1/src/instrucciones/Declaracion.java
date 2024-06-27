@@ -6,7 +6,6 @@ package instrucciones;
 
 import abstracto.Instruccion;
 import excepciones.Errores;
-import java.util.LinkedList;
 import simbolo.Arbol;
 import simbolo.Simbolo;
 import simbolo.Tipo;

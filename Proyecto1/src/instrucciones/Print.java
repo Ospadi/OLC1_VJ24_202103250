@@ -7,6 +7,8 @@ package instrucciones;
 import abstracto.Instruccion;
 import excepciones.Errores;
 import simbolo.*;
+import java.util.LinkedList;
+import java.util.Arrays;
 /**
  *
  * @author opadi
@@ -26,7 +28,15 @@ public class Print extends Instruccion {
         if (resultado instanceof Errores) {
             return resultado;
         }
-        arbol.Print(resultado.toString());
+
+        if (resultado instanceof Object[]) {
+            arbol.Print(Arrays.deepToString((Object[]) resultado));
+        } else if (resultado instanceof LinkedList) {
+            arbol.Print(resultado.toString());
+        } else {
+            arbol.Print(resultado.toString());
+        }
+
         return null;
     }
 }

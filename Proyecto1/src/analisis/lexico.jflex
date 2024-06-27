@@ -95,6 +95,9 @@ ROUND = "round"
 LEN = "length"
 TOSTR = "tostring"
 FIND = "find"
+STRUCT = "struct"
+VOID = "void"
+SW = "start_with"
 
 %%
 
@@ -124,7 +127,9 @@ FIND = "find"
 <YYINITIAL> {LEN}      {return new Symbol(sym.LEN, yyline, yycolumn,yytext());}
 <YYINITIAL> {TOSTR}    {return new Symbol(sym.TOSTR, yyline, yycolumn,yytext());}
 <YYINITIAL> {FIND}     {return new Symbol(sym.FIND, yyline, yycolumn,yytext());}
-
+<YYINITIAL> {STRUCT}   {return new Symbol(sym.STRUCT, yyline, yycolumn,yytext());}
+<YYINITIAL> {VOID}     {return new Symbol(sym.VOID, yyline, yycolumn,yytext());}
+<YYINITIAL> {SW}       {return new Symbol(sym.SW, yyline, yycolumn,yytext());}
 
 <YYINITIAL> {DECIMAL} {return new Symbol(sym.DECIMAL, yyline, yycolumn,yytext());}
 <YYINITIAL> {ENTERO}  {return new Symbol(sym.ENTERO, yyline, yycolumn,yytext());}

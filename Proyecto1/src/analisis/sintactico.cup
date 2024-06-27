@@ -2,6 +2,7 @@ package analisis;
 
 import java_cup.runtime.Symbol;
 import java.util.LinkedList;
+import java.util.HashMap;
 import abstracto.Instruccion;
 import simbolo.Tipo;
 import simbolo.tipoDato;
@@ -32,6 +33,9 @@ import instrucciones.FuncionRound;
 import instrucciones.FuncionLength;
 import instrucciones.FuncionToString;
 import instrucciones.FuncionFind;
+import instrucciones.Metodo;
+import instrucciones.Llamada;
+import instrucciones.Execute;
 
 //expresiones
 import expresiones.Nativo;
@@ -76,6 +80,7 @@ action code
 
 //terminales
 terminal String CADENA, ENTERO, DECIMAL, ID, CARAC;
+terminal String BREAK, CONTINUE;
 terminal PTCOMA, PRINT, COMA;
 terminal MAS, MENOS, UMENOS, MULT, DIV, POTENCIA, MODULO;
 terminal LLAVIZQ, LLAVDER, CORIZQ, CORDER, PARIZQ, PARDER;
@@ -84,8 +89,7 @@ terminal MENOR, MENORQUE, MAYOR, MAYORQUE;
 terminal OR, AND, XOR, NOT, FLECHA, DEFAULT;
 terminal VAR, INT, RDOUBLE, BOOL, CHAR, RSTRING, CONST;
 terminal IF, ELSE, MATCH, WHILE, FOR, DO, RTRUE, RFALSE;
-terminal String BREAK, CONTINUE;
-terminal PUNTO, APP, LIST, REM, NEW, ROUND, LEN, TOSTR, FIND;
+terminal PUNTO, APP, LIST, REM, NEW, ROUND, LEN, TOSTR, FIND, STRUCT, VOID, SW;
 
 //no terminales
 nonterminal LinkedList<Instruccion> INICIO, INSTRUCCIONES;
@@ -105,6 +109,11 @@ nonterminal LinkedList<Instruccion> LISTAVALORES;
 nonterminal LinkedList<LinkedList<Instruccion>> LISTAVALORES2D;
 nonterminal Instruccion DECL_LISTA, APPEND_LISTA, REMOVE_LISTA, ACC, ASIG;
 nonterminal Instruccion FUNC_ROUND, FUNC_LENGTH, FUNC_TOSTRING, FUNC_FIND;
+nonterminal Instruccion METODO;
+nonterminal LinkedList<HashMap> PARAMS;
+nonterminal Instruccion EXECUTEE;
+nonterminal LinkedList<Instruccion> PARAMSCALL;
+nonterminal Instruccion LLAMADA;
 
 precedence left OR;
 precedence left AND;
@@ -148,6 +157,9 @@ INSTRUCCION ::= IMPRESION: a            {:   RESULT = a;   :}
               | REMOVE_LISTA: a         {:   RESULT = a;   :}
               | ASIG: a                 {:   RESULT = a;   :}
               | ACC: a                  {:   RESULT = a;   :}
+              | METODO:a                {:   RESULT = a;   :}
+              | EXECUTEE:a              {:   RESULT = a;   :}
+              | LLAMADA:a               {:   RESULT = a;   :}
               | error PTCOMA
 ;
 
@@ -195,8 +207,8 @@ DECREMENTO ::= ID:a DECRE  {: RESULT = new Decremento(a, aleft, aright); :}
 ;
 
 ACTU ::= ID:a IGUAL EXPRESION:b        {:   RESULT=new AsignacionVar(a, b, aleft, aright);  :}
-              | INCREMENTO:a           {:   RESULT=a;   :}
-              | DECREMENTO:a           {:   RESULT=a;   :} 
+        | INCREMENTO:a           {:   RESULT=a;   :}
+        | DECREMENTO:a           {:   RESULT=a;   :} 
 ;
 
 BK ::= BREAK:a PTCOMA      {:    RESULT = new Break(aleft, aright);     :}
@@ -210,6 +222,7 @@ TIPOS ::= INT          {:   RESULT = new Tipo (tipoDato.ENTERO);   :}
         | BOOL         {:   RESULT = new Tipo (tipoDato.BOOLEANO); :}
         | CHAR         {:   RESULT = new Tipo (tipoDato.CARACTER); :}
         | RSTRING      {:   RESULT = new Tipo (tipoDato.CADENA);   :}
+        | VOID         {:   RESULT = new Tipo (tipoDato.VOID);     :}
 ;
 
 EXPRESION ::= MENOS EXPRESION:a                 {:   RESULT = new Aritmeticas(a, OperadoresAritmeticos.NEGACION, aleft, aright);   :} %prec UMENOS
@@ -271,37 +284,61 @@ LISTAVALORES2D ::= LISTAVALORES2D:a COMA CORIZQ LISTAVALORES:b CORDER           
 DECL_LISTA ::= LIST MENOR TIPOS:b MAYOR ID:a IGUAL NEW LIST PARIZQ PARDER PTCOMA      {:   RESULT = new DeclaracionLista(b, a, aleft, aright);   :}
 ;
 
-APPEND_LISTA ::= ID:a PUNTO APP PARIZQ EXPRESION:b PARDER PTCOMA          {: RESULT = new AppendLista(a, b, aleft, aright);   :}
+APPEND_LISTA ::= ID:a PUNTO APP PARIZQ EXPRESION:b PARDER PTCOMA        {: RESULT = new AppendLista(a, b, aleft, aright);   :}
 ;
 
-REMOVE_LISTA ::= ID:a PUNTO REM PARIZQ EXPRESION:b PARDER PTCOMA          {: RESULT = new RemoveLista(a, b, aleft, aright);   :}
+REMOVE_LISTA ::= ID:a PUNTO REM PARIZQ EXPRESION:b PARDER PTCOMA        {: RESULT = new RemoveLista(a, b, aleft, aright);   :}
 ;
 
-ASIG ::= ID:a CORIZQ EXPRESION:b CORDER IGUAL EXPRESION:c PTCOMA
-                {: RESULT = new Asignacion(a, b, c, aleft, aright); :}
-              ;
+ASIG ::= ID:a CORIZQ EXPRESION:b CORDER IGUAL EXPRESION:c PTCOMA        {: RESULT = new Asignacion(a, b, c, aleft, aright); :}
+;
 
-ACC::= ID:a CORIZQ EXPRESION:b CORDER
-               {: RESULT = new Acceso(a, b, aleft, aright); :}
-             ;
+ACC::= ID:a CORIZQ EXPRESION:b CORDER                                   {: RESULT = new Acceso(a, b, aleft, aright); :}
+;
 
+FUNC_ROUND ::= ROUND PARIZQ EXPRESION:a PARDER                          {: RESULT = new FuncionRound(a, aleft, aright); :}
+;
 
+FUNC_LENGTH ::= LEN PARIZQ EXPRESION:a PARDER                           {: RESULT = new FuncionLength(a, aleft, aright); :}
+;
 
-FUNC_ROUND ::= ROUND PARIZQ EXPRESION:a PARDER
-              {: RESULT = new FuncionRound(a, aleft, aright); :}
-            ;
+FUNC_TOSTRING ::= TOSTR PARIZQ EXPRESION:a PARDER                       {: RESULT = new FuncionToString(a, aleft, aright); :}
+;
 
+FUNC_FIND ::= ID:a PUNTO FIND PARIZQ EXPRESION:b PARDER                 {: RESULT = new FuncionFind(a, b, aleft, aright); :}
+;
 
-FUNC_LENGTH ::= LEN PARIZQ EXPRESION:a PARDER
-               {: RESULT = new FuncionLength(a, aleft, aright); :}
-             ;
+METODO ::= TIPOS:a ID:b PARIZQ PARAMS:p PARDER LLAVIZQ INSTRUCCIONES:c LLAVDER    {:   RESULT= new Metodo(b, p, c, a, aleft, aright );   :}
+        |  TIPOS:a ID:b PARIZQ PARDER LLAVIZQ INSTRUCCIONES:c LLAVDER             {:   RESULT= new Metodo(b, new LinkedList<HashMap>(), c, a, aleft, aright );   :}
+;
 
+PARAMS ::= PARAMS:a COMA TIPOS:b ID:c   {:  
+                                            RESULT = a;
+                                            var hm2= new HashMap<String, Object>();
+                                            hm2.put("id", c);
+                                            hm2.put("tipo", b);
+                                            RESULT.add(hm2);
+                                        :}
+        | TIPOS:a ID:b                  {:  RESULT = new LinkedList<HashMap>(); 
+                                            var hm = new HashMap<String, Object>();
+                                            hm.put("id",b);
+                                            hm.put("tipo", a);
+                                            RESULT.add(hm);
+                                        :}
+;
 
-FUNC_TOSTRING ::= TOSTR PARIZQ EXPRESION:a PARDER
-                {: RESULT = new FuncionToString(a, aleft, aright); :}
-              ;
+EXECUTEE ::=  SW ID:a PARIZQ PARAMSCALL:b PARDER PTCOMA    {:   RESULT = new Execute(a, b, aleft, aright );   :}
+            | SW ID:a PARIZQ PARDER PTCOMA                 {:   RESULT = new Execute(a, new LinkedList<Instruccion>(), aleft, aright );   :}
+;
 
+LLAMADA ::= ID:a PARIZQ PARAMSCALL:b PARDER PTCOMA         {:  RESULT= new Llamada(a, b, aleft, aright);    :}
+          | ID:a PARIZQ PARDER PTCOMA                      {:  RESULT= new Llamada(a, new LinkedList<Instruccion>(), aleft, aright);    :}    
+;
 
-FUNC_FIND ::= ID:a PUNTO FIND PARIZQ EXPRESION:b PARDER
-            {: RESULT = new FuncionFind(a, b, aleft, aright); :}
-          ;
+PARAMSCALL ::= PARAMSCALL:a COMA EXPRESION:e    {:  RESULT = a;
+                                                    RESULT.add(e);
+                                                :}
+            | EXPRESION:a                       {:  RESULT = new LinkedList<Instruccion>(); 
+                                                    RESULT.add(a);
+                                                :}
+;
