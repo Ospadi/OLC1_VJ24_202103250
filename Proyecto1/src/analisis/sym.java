@@ -41,6 +41,7 @@ public class sym {
   public static final int EOF = 0;
   public static final int PARIZQ = 23;
   public static final int DECIMAL = 4;
+  public static final int RETURN = 68;
   public static final int APP = 57;
   public static final int NEW = 60;
   public static final int error = 1;
@@ -144,7 +145,8 @@ public class sym {
   "FIND",
   "STRUCT",
   "VOID",
-  "SW"
+  "SW",
+  "RETURN"
   };
 }
 

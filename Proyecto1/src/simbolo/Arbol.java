@@ -76,7 +76,7 @@ public class Arbol {
     }
 
     public void addFunciones(Instruccion funcion) {
-        this.funciones.add(funcion);
+            this.funciones.add(funcion);
     }
 
     public Instruccion getFuncion(String id) {
@@ -88,5 +88,11 @@ public class Arbol {
             }
         }
         return null;
+    }
+
+    public int getContador() {
+        this.contador++;
+        return this.contador;
+
     }
 }

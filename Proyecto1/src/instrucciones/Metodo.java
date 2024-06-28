@@ -5,6 +5,7 @@
 package instrucciones;
 
 import abstracto.Instruccion;
+import excepciones.Errores;
 import java.util.HashMap;
 import java.util.LinkedList;
 import simbolo.Arbol;
@@ -16,7 +17,6 @@ import simbolo.tablaSimbolos;
  * @author opadi
  */
 public class Metodo extends Instruccion {
-
     public String id;
     public LinkedList<HashMap> parametros;
     public LinkedList<Instruccion> instrucciones;
@@ -30,9 +30,27 @@ public class Metodo extends Instruccion {
 
     @Override
     public Object interpretar(Arbol arbol, tablaSimbolos tabla) {
+        return null;
+    }
+
+    public Object ejecutar(Arbol arbol, tablaSimbolos tabla) {
         for (var i : this.instrucciones) {
             var resultado = i.interpretar(arbol, tabla);
+            if (resultado instanceof Errores) {
+                return resultado;
+            }
+            if (i instanceof Return && this.tipo.getTipo() == i.tipo.getTipo()) {
+                return resultado;
+            }
+            if (resultado instanceof Return ) {
+                var value = ((Return) resultado).interpretar(arbol, tabla);
+                if (this.tipo.getTipo() == ((Return) resultado).tipo.getTipo()) {
+                    return value;
+                }
+                return new Errores("SEMANTICO", "El tipo de retorno no coincide", this.linea, this.col);
+            }
         }
         return null;
     }
 }
+

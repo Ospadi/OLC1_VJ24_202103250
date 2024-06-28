@@ -36,6 +36,8 @@ import instrucciones.FuncionFind;
 import instrucciones.Metodo;
 import instrucciones.Llamada;
 import instrucciones.Execute;
+import instrucciones.Return;
+
 
 //expresiones
 import expresiones.Nativo;
@@ -89,7 +91,8 @@ terminal MENOR, MENORQUE, MAYOR, MAYORQUE;
 terminal OR, AND, XOR, NOT, FLECHA, DEFAULT;
 terminal VAR, INT, RDOUBLE, BOOL, CHAR, RSTRING, CONST;
 terminal IF, ELSE, MATCH, WHILE, FOR, DO, RTRUE, RFALSE;
-terminal PUNTO, APP, LIST, REM, NEW, ROUND, LEN, TOSTR, FIND, STRUCT, VOID, SW;
+terminal PUNTO, APP, LIST, REM, NEW, ROUND, LEN, TOSTR, FIND; 
+terminal STRUCT, VOID, SW, RETURN;
 
 //no terminales
 nonterminal LinkedList<Instruccion> INICIO, INSTRUCCIONES;
@@ -113,7 +116,7 @@ nonterminal Instruccion METODO;
 nonterminal LinkedList<HashMap> PARAMS;
 nonterminal Instruccion EXECUTEE;
 nonterminal LinkedList<Instruccion> PARAMSCALL;
-nonterminal Instruccion LLAMADA;
+nonterminal Instruccion LLAMADA, RET, FUNCION;
 
 precedence left OR;
 precedence left AND;
@@ -159,7 +162,9 @@ INSTRUCCION ::= IMPRESION: a            {:   RESULT = a;   :}
               | ACC: a                  {:   RESULT = a;   :}
               | METODO:a                {:   RESULT = a;   :}
               | EXECUTEE:a              {:   RESULT = a;   :}
-              | LLAMADA:a               {:   RESULT = a;   :}
+              | LLAMADA:a PTCOMA        {:   RESULT = a;   :}
+              | RET:a                   {:   RESULT = a;   :}
+              | FUNCION:a               {:   RESULT = a;   :}
               | error PTCOMA
 ;
 
@@ -257,6 +262,8 @@ EXPRESION ::= MENOS EXPRESION:a                 {:   RESULT = new Aritmeticas(a,
             | FUNC_LENGTH:a                     {:   RESULT = a; :}
             | FUNC_TOSTRING:a                   {:   RESULT = a; :}
             | FUNC_FIND:a                       {:   RESULT = a; :}
+            | RET:a                             {:   RESULT = a; :}
+            | LLAMADA:a                         {:   RESULT = a; :}
 ;
 
 DEC_VEC ::= VAR ID:b DOSPT TIPOS:a CORIZQ CORDER IGUAL CORIZQ LISTAVALORES:c CORDER PTCOMA      {: RESULT = new DeclaracionVector("var", b, a, c, bleft, bright); :}
@@ -308,9 +315,10 @@ FUNC_TOSTRING ::= TOSTR PARIZQ EXPRESION:a PARDER                       {: RESUL
 FUNC_FIND ::= ID:a PUNTO FIND PARIZQ EXPRESION:b PARDER                 {: RESULT = new FuncionFind(a, b, aleft, aright); :}
 ;
 
-METODO ::= TIPOS:a ID:b PARIZQ PARAMS:p PARDER LLAVIZQ INSTRUCCIONES:c LLAVDER    {:   RESULT= new Metodo(b, p, c, a, aleft, aright );   :}
-        |  TIPOS:a ID:b PARIZQ PARDER LLAVIZQ INSTRUCCIONES:c LLAVDER             {:   RESULT= new Metodo(b, new LinkedList<HashMap>(), c, a, aleft, aright );   :}
+METODO ::= TIPOS:a ID:b PARIZQ PARAMS:p PARDER LLAVIZQ INSTRUCCIONES:c LLAVDER    {:   RESULT = new Metodo(b, p, c, a, aleft, aright );   :}
+        |  TIPOS:a ID:b PARIZQ PARDER LLAVIZQ INSTRUCCIONES:c LLAVDER             {:   RESULT = new Metodo(b, new LinkedList<HashMap>(), c, a, aleft, aright );   :}
 ;
+
 
 PARAMS ::= PARAMS:a COMA TIPOS:b ID:c   {:  
                                             RESULT = a;
@@ -331,8 +339,8 @@ EXECUTEE ::=  SW ID:a PARIZQ PARAMSCALL:b PARDER PTCOMA    {:   RESULT = new Exe
             | SW ID:a PARIZQ PARDER PTCOMA                 {:   RESULT = new Execute(a, new LinkedList<Instruccion>(), aleft, aright );   :}
 ;
 
-LLAMADA ::= ID:a PARIZQ PARAMSCALL:b PARDER PTCOMA         {:  RESULT= new Llamada(a, b, aleft, aright);    :}
-          | ID:a PARIZQ PARDER PTCOMA                      {:  RESULT= new Llamada(a, new LinkedList<Instruccion>(), aleft, aright);    :}    
+LLAMADA ::= ID:a PARIZQ PARAMSCALL:b PARDER        {:  RESULT = new Llamada(a, b, aleft, aright);    :}
+          | ID:a PARIZQ PARDER                     {:  RESULT = new Llamada(a, new LinkedList<Instruccion>(), aleft, aright);    :}    
 ;
 
 PARAMSCALL ::= PARAMSCALL:a COMA EXPRESION:e    {:  RESULT = a;
@@ -341,4 +349,8 @@ PARAMSCALL ::= PARAMSCALL:a COMA EXPRESION:e    {:  RESULT = a;
             | EXPRESION:a                       {:  RESULT = new LinkedList<Instruccion>(); 
                                                     RESULT.add(a);
                                                 :}
+;
+
+RET ::= RETURN EXPRESION:a PTCOMA    {:  RESULT = new Return(a, aleft, aright);  :}
+    | RETURN PTCOMA                  {:  RESULT = new Return(null, 1, 1);  :}
 ;
