@@ -98,6 +98,7 @@ FIND = "find"
 STRUCT = "struct"
 VOID = "void"
 SW = "start_with"
+RETURN = "return"
 
 %%
 
@@ -130,24 +131,25 @@ SW = "start_with"
 <YYINITIAL> {STRUCT}   {return new Symbol(sym.STRUCT, yyline, yycolumn,yytext());}
 <YYINITIAL> {VOID}     {return new Symbol(sym.VOID, yyline, yycolumn,yytext());}
 <YYINITIAL> {SW}       {return new Symbol(sym.SW, yyline, yycolumn,yytext());}
+<YYINITIAL> {RETURN}   {return new Symbol(sym.RETURN, yyline, yycolumn,yytext());}
 
-<YYINITIAL> {DECIMAL} {return new Symbol(sym.DECIMAL, yyline, yycolumn,yytext());}
-<YYINITIAL> {ENTERO}  {return new Symbol(sym.ENTERO, yyline, yycolumn,yytext());}
-<YYINITIAL> {ID}      {return new Symbol(sym.ID, yyline, yycolumn,yytext());}
-<YYINITIAL> {CARAC}   {return new Symbol(sym.CARAC, yyline, yycolumn,yytext());}
+<YYINITIAL> {DECIMAL}  {return new Symbol(sym.DECIMAL, yyline, yycolumn,yytext());}
+<YYINITIAL> {ENTERO}   {return new Symbol(sym.ENTERO, yyline, yycolumn,yytext());}
+<YYINITIAL> {ID}       {return new Symbol(sym.ID, yyline, yycolumn,yytext());}
+<YYINITIAL> {CARAC}    {return new Symbol(sym.CARAC, yyline, yycolumn,yytext());}
 
-<YYINITIAL> [\"]        {cadena = ""; yybegin(CADENA);}
+<YYINITIAL> [\"]       {cadena = ""; yybegin(CADENA);}
 <CADENA> {
     [\"]        {String str= cadena;
                 cadena="";
                 yybegin(YYINITIAL);
                 return new Symbol(sym.CADENA, yyline, yycolumn,str);}
-    [^\"]         { cadena += yytext(); }
-    "\\n"         { cadena += "\n"; }    
-    "\\\\"        { cadena += "\\"; }   
-    "\\\""        { cadena += "\""; }          
-    "\\t"         { cadena += "\t"; }        
-    "\\'"         { cadena += "'";  } 
+    [^\"]              { cadena += yytext(); }
+    "\\n"              { cadena += "\n"; }    
+    "\\\\"             { cadena += "\\"; }   
+    "\\\""             { cadena += "\""; }          
+    "\\t"              { cadena += "\t"; }        
+    "\\'"              { cadena += "'";  } 
 }
 
 <YYINITIAL> {PTCOMA}   {return new Symbol(sym.PTCOMA, yyline, yycolumn,yytext());}

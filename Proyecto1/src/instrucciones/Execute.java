@@ -50,8 +50,8 @@ public class Execute extends Instruccion {
 
                 if (resultadoDeclaracion instanceof Errores) {
                     return resultadoDeclaracion;
-                }
-
+                }              
+                
                 var variable = newTabla.getVariable(identificador);
                 if (variable == null) {
                     return new Errores("SEMANTICO", "Error declaracion parametros", this.linea, this.col);

@@ -50,17 +50,19 @@ public class For extends Instruccion {
             var newTabla2 = new tablaSimbolos(newTabla);
 
             for (var i : this.instrucciones) {
-                var resIns = i.interpretar(arbol, newTabla2);
-                
+                var resIns = i.interpretar(arbol, newTabla2);              
+
                 if (resIns instanceof Break) {
                     return null;
                 } else if (resIns instanceof Continue) {
                     break;
+                } else if (resIns instanceof Return) {
+                    return resIns;
                 }
-
                 if (resIns instanceof Errores) {
                     return resIns;
                 }
+                if (resIns != null) return resIns;
             }
 
             var act = this.actualizacion.interpretar(arbol, newTabla);

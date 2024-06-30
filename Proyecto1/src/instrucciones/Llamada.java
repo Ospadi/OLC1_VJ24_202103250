@@ -61,11 +61,14 @@ public class Llamada extends Instruccion {
             if (resultadoFuncion instanceof Errores) {
                 return resultadoFuncion;
             }
-            if (metodo.tipo.getTipo() != tipoDato.VOID){
+
+            if (metodo.tipo.getTipo() != tipoDato.VOID) {
                 this.tipo.setTipo(metodo.tipo.getTipo());
                 return resultadoFuncion;
-            }         
+            }
         }
         return null;
     }
 }
+
+

@@ -32,8 +32,4 @@ public class Return extends Instruccion {
         }
         return valor; 
     }
-    
-    public Instruccion getValorRes(){
-        return valorRes;
-    }
 }

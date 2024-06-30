@@ -13,6 +13,7 @@ import instrucciones.Declaracion;
 import instrucciones.Execute;
 import instrucciones.Metodo;
 import java.awt.Color;
+import java.awt.Font;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -50,6 +51,11 @@ public class Javacraft extends javax.swing.JFrame {
         textsalida.setEditable(false);
         listaErrores = new LinkedList<>();
         tabla = new tablaSimbolos();
+        textentrada.setTabSize(1);
+        Font fuenteE = new Font("Arial", Font.PLAIN, 13);
+        Font fuenteS = new Font("Arial", Font.PLAIN, 13);
+        textentrada.setFont(fuenteE);
+        textsalida.setFont(fuenteS);
     }
 
     /**

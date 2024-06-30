@@ -48,11 +48,14 @@ public class While extends Instruccion {
                     return null;
                 } else if (resIns instanceof Continue) {
                     break;
+                } else if (resIns instanceof Return) {
+                    return resIns;
                 }
 
                 if (resIns instanceof Errores) {
                     return resIns;
                 }
+                if (resIns != null) return resIns;
             }
         }
         return null;

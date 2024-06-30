@@ -36,18 +36,31 @@ public class Metodo extends Instruccion {
     public Object ejecutar(Arbol arbol, tablaSimbolos tabla) {
         for (var i : this.instrucciones) {
             var resultado = i.interpretar(arbol, tabla);
+
             if (resultado instanceof Errores) {
                 return resultado;
             }
-            if (i instanceof Return && this.tipo.getTipo() == i.tipo.getTipo()) {
-                return resultado;
+
+            if (i instanceof Return) {
+                var value = ((Return) i).interpretar(arbol, tabla);
+                if (this.tipo.getTipo() == ((Return) i).tipo.getTipo()) {
+                    return value;
+                } else {
+                    return new Errores("SEMANTICO", "El tipo de retorno no coincide", this.linea, this.col);
+                }
             }
-            if (resultado instanceof Return ) {
+
+            if (resultado instanceof Return) {
                 var value = ((Return) resultado).interpretar(arbol, tabla);
                 if (this.tipo.getTipo() == ((Return) resultado).tipo.getTipo()) {
                     return value;
+                } else {
+                    return new Errores("SEMANTICO", "El tipo de retorno no coincide", this.linea, this.col);
                 }
-                return new Errores("SEMANTICO", "El tipo de retorno no coincide", this.linea, this.col);
+            }
+
+            if (resultado != null) {
+                return resultado;
             }
         }
         return null;

@@ -44,23 +44,28 @@ public class If extends Instruccion {
         if ((boolean) cond) {
             for (Instruccion instruccion : this.instruccionesIf) {
                 var resultado = instruccion.interpretar(arbol, nuevaTabla);
-                if (resultado instanceof Break || resultado instanceof Continue) {
+                if (resultado instanceof Break || resultado instanceof Continue || resultado instanceof Return) {
                     return resultado;
                 }
+                if (resultado != null) return resultado;
             }
         } else if (this.elseif != null) {
             var resultado = this.elseif.interpretar(arbol, nuevaTabla);
-            if (resultado instanceof Break || resultado instanceof Continue) {
+            if (resultado instanceof Break || resultado instanceof Continue || resultado instanceof Return) {
                 return resultado;
             }
+            if (resultado != null) return resultado;
         } else if (this.instruccionesElse != null) {
             for (Instruccion instruccion : this.instruccionesElse) {
                 var resultado = instruccion.interpretar(arbol, nuevaTabla);
-                if (resultado instanceof Break || resultado instanceof Continue) {
+                if (resultado instanceof Break || resultado instanceof Continue || resultado instanceof Return) {
                     return resultado;
                 }
+                if (resultado != null) return resultado;
             }
+            
         }
+        
 
         return null;
     }
