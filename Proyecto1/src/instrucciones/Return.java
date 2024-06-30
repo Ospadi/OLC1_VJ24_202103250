@@ -5,7 +5,6 @@
 package instrucciones;
 
 import abstracto.Instruccion;
-import excepciones.Errores;
 import simbolo.*;
 
 /**
@@ -25,11 +24,7 @@ public class Return extends Instruccion {
         if (valorRes == null){
             return this;
         }
-        
-        Object valor = valorRes.interpretar(arbol, tabla);
-        if (valor instanceof Errores){
-            return valor;
-        }
-        return valor; 
+        Object res = valorRes.interpretar(arbol, tabla);
+        return res; 
     }
 }

@@ -116,7 +116,7 @@ nonterminal Instruccion METODO;
 nonterminal LinkedList<HashMap> PARAMS;
 nonterminal Instruccion EXECUTEE;
 nonterminal LinkedList<Instruccion> PARAMSCALL;
-nonterminal Instruccion LLAMADA, RET, FUNCION;
+nonterminal Instruccion LLAMADA, RET;
 
 precedence left OR;
 precedence left AND;
@@ -164,7 +164,6 @@ INSTRUCCION ::= IMPRESION: a            {:   RESULT = a;   :}
               | EXECUTEE:a              {:   RESULT = a;   :}
               | LLAMADA:a PTCOMA        {:   RESULT = a;   :}
               | RET:a                   {:   RESULT = a;   :}
-              | FUNCION:a               {:   RESULT = a;   :}
               | error PTCOMA
 ;
 
